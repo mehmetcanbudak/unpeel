@@ -26,6 +26,60 @@ Shared protocol/crypto (pairing, remote control, Relay E2E) lives in
 
 ## Build & test
 
-Built/deployed via `xcodebuild` (see `docs/agents/dev-builds.md` for signing
+Built/deployed via `xcodebuild` (see `docs/agents/clients/dev-builds.md` for signing
 and device gotchas). Package tests: `swift test` is broken on macOS for this
 package — use the xcodebuild package-scheme recipe in that doc.
+
+## Private TestFlight builds (this fork)
+
+`main` tracks upstream; `private-testflight` adds distribution settings without
+changing the application code, branding, or Link endpoints. These builds are
+signed by Mehmetcan Budak, not official UX Themes AS releases. Branding and
+service use remain subject to upstream's `TRADEMARK.md` and any author permission.
+
+- App Store Connect: **Unpeel Private**, app ID `6824027713`.
+- Bundle ID: `com.mehmetcan.unpeel.ios.remote`, signing team `476T8NQCSX`.
+- One universal app supports iPhone and iPad, preserving the official app as a
+  separate installation. Pair this copy with the Host after installing.
+- `PrivateTestFlight.xcconfig` supplies signing overrides; upstream project
+  settings and entitlements stay intact.
+- `ExportOptionsPrivateTestFlight.plist` uploads **internal-only** builds.
+  The **Private** internal group automatically receives uploads; tester access is
+  managed in App Store Connect.
+
+Run from the repository root. Keep the App Store Connect private key outside the
+checkout. Set `ASC_KEY_PATH`, `ASC_KEY_ID`, and `ASC_ISSUER_ID` in your shell from
+your existing Apple API-key configuration; never commit credentials.
+
+```sh
+git switch private-testflight
+git fetch upstream
+git merge upstream/main
+
+xcodebuild -project clients/ios/UnpeelIOS/UnpeelIOS.xcodeproj \
+  -scheme UnpeelIOSApp -configuration Release \
+  -destination 'generic/platform=iOS' \
+  -xcconfig clients/ios/UnpeelIOS/PrivateTestFlight.xcconfig \
+  -archivePath /tmp/unpeel-private-testflight/Unpeel.xcarchive \
+  -derivedDataPath /tmp/unpeel-private-testflight/DerivedData \
+  -allowProvisioningUpdates \
+  -authenticationKeyPath "${ASC_KEY_PATH:?}" \
+  -authenticationKeyID "${ASC_KEY_ID:?}" \
+  -authenticationKeyIssuerID "${ASC_ISSUER_ID:?}" archive
+
+xcodebuild -exportArchive \
+  -archivePath /tmp/unpeel-private-testflight/Unpeel.xcarchive \
+  -exportOptionsPlist clients/ios/UnpeelIOS/ExportOptionsPrivateTestFlight.plist \
+  -exportPath /tmp/unpeel-private-testflight/export \
+  -allowProvisioningUpdates \
+  -authenticationKeyPath "${ASC_KEY_PATH:?}" \
+  -authenticationKeyID "${ASC_KEY_ID:?}" \
+  -authenticationKeyIssuerID "${ASC_ISSUER_ID:?}"
+```
+
+The upload configuration lets Xcode manage the build number. Apple processing and
+tester eligibility still determine when a build becomes installable. Pulling
+upstream changes does not itself publish an update; archive and upload again.
+Preserving Link endpoints does not prove push delivery for this separate signing
+identity: the operated relay needs APNs support for the new team and bundle ID.
+Verify pairing, remote connectivity, and push notifications on hardware.
