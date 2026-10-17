@@ -47,6 +47,12 @@ service use remain subject to upstream's `TRADEMARK.md` and any author permissio
   The **Private** internal group automatically receives uploads; tester access is
   managed in App Store Connect.
 
+Export uses the local **Apple Distribution** identity and the **Unpeel Private
+App Store** provisioning profile, not cloud-managed signing. The profile must
+include production Push Notifications and be installed in Xcode's provisioning
+profile directory. The profile provisioned for this account expires June 2, 2027;
+renew it with the matching distribution certificate before expiration.
+
 Run from the repository root. Keep the App Store Connect private key outside the
 checkout. Set `ASC_KEY_PATH`, `ASC_KEY_ID`, and `ASC_ISSUER_ID` in your shell from
 your existing Apple API-key configuration; never commit credentials.
