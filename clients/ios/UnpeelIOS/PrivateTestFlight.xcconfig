@@ -1,0 +1,5 @@
+// Private distribution; upstream application code and service URLs are unchanged.
+UNPEEL_DEVELOPMENT_TEAM = 476T8NQCSX
+DEVELOPMENT_TEAM = $(UNPEEL_DEVELOPMENT_TEAM)
+PRODUCT_BUNDLE_IDENTIFIER = com.mehmetcan.unpeel.ios.remote
+CODE_SIGN_STYLE = Automatic
